@@ -1,6 +1,6 @@
 # Provider Search Agent
 
-This agent helps UnitedHealth Group members find in-network doctors and specialists.
+This agent helps Insurance Group members find in-network doctors and specialists.
 
 ## Overview
 
@@ -27,7 +27,7 @@ This is a conversational agent that guides a user through the process of finding
 
     ```bash
     # From the root of agent-framework-samples
-    pip install -e uhg_provider_search/
+    pip install -e provider_search/
     ```
 
 ## Running the Agent
@@ -39,14 +39,14 @@ You can interact with the agent using the ADK's command-line interface or the St
 1. From the root of the `agent-framework-samples` directory, run the agent:
 
     ```bash
-    adk run uhg_provider_search
+    adk run provider_search
     ```
 
 2. You can now chat with the agent in your terminal.
 
     **Example Interaction:**
 
-    > **Agent:** Hello! I can help you find a doctor or specialist in your UnitedHealth Group network. What type of doctor are you looking for today? (e.g., Primary Care, Cardiologist, Dermatologist, Pediatrician)
+    > **Agent:** Hello! I can help you find a doctor or specialist in your Insurance Group network. What type of doctor are you looking for today? (e.g., Primary Care, Cardiologist, Dermatologist, Pediatrician)
     >
     > **You:** I need a Dermatologist
     >
@@ -61,4 +61,4 @@ You can interact with the agent using the ADK's command-line interface or the St
     ```
 
 2. Open the provided URL in your web browser.
-3. Select "uhg_provider_search" from the agent dropdown menu to start a new session.
+3. Select "provider_search" from the agent dropdown menu to start a new session.
