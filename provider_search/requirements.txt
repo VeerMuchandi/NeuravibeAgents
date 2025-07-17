@@ -1,0 +1,5 @@
+pysqlite3-binary
+fastapi==0.115.12
+dotenv==0.9.9
+python-dotenv==1.1.0
+google-cloud-aiplatform[agent_engines,adk]
