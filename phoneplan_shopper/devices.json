@@ -1,0 +1,144 @@
+{
+  "devices": [
+    {
+      "name": "Google Pixel 9 Pro",
+      "brand": "Google",
+      "monthly_price": 40,
+      "tier": "premium",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Google_Pixel_9_Pro_%28Rose_Quartz%29_rear.svg/971px-Google_Pixel_9_Pro_%28Rose_Quartz%29_rear.svg.png"
+    },
+    {
+      "name": "iPhone 16 Pro Max",
+      "brand": "Apple",
+      "monthly_price": 45,
+      "tier": "premium",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/IPhone_16_Pro_Vector.svg/800px-IPhone_16_Pro_Vector.svg.png"
+    },
+    {
+      "name": "Samsung Galaxy S25 Ultra",
+      "brand": "Samsung",
+      "monthly_price": 42,
+      "tier": "premium",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/S25_Blueblack.png/500px-S25_Blueblack.png"
+    },
+    {
+      "name": "Google Pixel 9",
+      "brand": "Google",
+      "monthly_price": 35,
+      "tier": "high-end",
+      "image_url": "https://storage.googleapis.com/telecom-assets/pixel_9.png"
+    },
+    {
+      "name": "iPhone 16 Pro",
+      "brand": "Apple",
+      "monthly_price": 40,
+      "tier": "high-end",
+      "image_url": "https://storage.googleapis.com/telecom-assets/iphone_16_pro.png"
+    },
+    {
+      "name": "Samsung Galaxy S25+",
+      "brand": "Samsung",
+      "monthly_price": 38,
+      "tier": "high-end",
+      "image_url": "https://storage.googleapis.com/telecom-assets/galaxy_s25_plus.png"
+    },
+    {
+      "name": "Google Pixel 8a",
+      "brand": "Google",
+      "monthly_price": 20,
+      "tier": "mid-range",
+      "image_url": "https://storage.googleapis.com/telecom-assets/pixel_8a.png"
+    },
+    {
+      "name": "iPhone 16",
+      "brand": "Apple",
+      "monthly_price": 30,
+      "tier": "mid-range",
+      "image_url": "https://storage.googleapis.com/telecom-assets/iphone_16.png"
+    },
+    {
+      "name": "Samsung Galaxy S25",
+      "brand": "Samsung",
+      "monthly_price": 32,
+      "tier": "mid-range",
+      "image_url": "https://storage.googleapis.com/telecom-assets/galaxy_s25.png"
+    },
+    {
+      "name": "Samsung Galaxy Z Fold 6",
+      "brand": "Samsung",
+      "monthly_price": 55,
+      "tier": "premium",
+      "image_url": "https://storage.googleapis.com/telecom-assets/galaxy_z_fold_6.png"
+    },
+    {
+      "name": "Samsung Galaxy Z Flip 6",
+      "brand": "Samsung",
+      "monthly_price": 40,
+      "tier": "high-end",
+      "image_url": "https://storage.googleapis.com/telecom-assets/galaxy_z_flip_6.png"
+    },
+    {
+      "name": "iPhone SE (4th Gen)",
+      "brand": "Apple",
+      "monthly_price": 18,
+      "tier": "mid-range",
+      "image_url": "https://storage.googleapis.com/telecom-assets/iphone_se_4.png"
+    },
+    {
+      "name": "Google Pixel 8 Pro",
+      "brand": "Google",
+      "monthly_price": 38,
+      "tier": "high-end",
+      "image_url": "https://storage.googleapis.com/telecom-assets/pixel_8_pro.png"
+    },
+    {
+      "name": "Samsung Galaxy A56",
+      "brand": "Samsung",
+      "monthly_price": 15,
+      "tier": "mid-range",
+      "image_url": "https://storage.googleapis.com/telecom-assets/galaxy_a56.png"
+    },
+    {
+      "name": "iPhone 15 Pro",
+      "brand": "Apple",
+      "monthly_price": 38,
+      "tier": "high-end",
+      "image_url": "https://storage.googleapis.com/telecom-assets/iphone_15_pro.png"
+    },
+    {
+      "name": "Google Pixel Fold 2",
+      "brand": "Google",
+      "monthly_price": 58,
+      "tier": "premium",
+      "image_url": "https://storage.googleapis.com/telecom-assets/pixel_fold_2.png"
+    },
+    {
+      "name": "Samsung Galaxy S24 Ultra",
+      "brand": "Samsung",
+      "monthly_price": 40,
+      "tier": "premium",
+      "image_url": "https://storage.googleapis.com/telecom-assets/galaxy_s24_ultra.png"
+    },
+    {
+      "name": "iPhone 15 Plus",
+      "brand": "Apple",
+      "monthly_price": 33,
+      "tier": "high-end",
+      "image_url": "https://storage.googleapis.com/telecom-assets/iphone_15_plus.png"
+    },
+    {
+      "name": "Samsung Galaxy A36",
+      "brand": "Samsung",
+      "monthly_price": 12,
+      "tier": "mid-range",
+      "image_url": "https://storage.googleapis.com/telecom-assets/galaxy_a36.png"
+    },
+    {
+      "name": "Google Pixel 8",
+      "brand": "Google",
+      "monthly_price": 30,
+      "tier": "high-end",
+      "image_url": "https://storage.googleapis.com/telecom-assets/pixel_8.png"
+    }
+  ]
+}
