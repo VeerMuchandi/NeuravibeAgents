@@ -3,7 +3,7 @@
 from google.adk.agents import LlmAgent
 
 # Import the simulated tool functions from the other file
-import telecom_api_simulator
+from . import telecom_api_simulator
 
 # 1. Define the Agent's instructions
 # These instructions guide the LLM's behavior, personality, and how it should use tools.

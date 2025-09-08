@@ -1,0 +1,6 @@
+__pycache__
+.ae_ignore
+.git
+.gitignore
+.venv
+.env
