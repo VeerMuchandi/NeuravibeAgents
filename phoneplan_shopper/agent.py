@@ -1,6 +1,7 @@
 # agent.py
 
 from google.adk.agents import LlmAgent
+from google.genai import types
 
 # Import the simulated tool functions from the other file
 from . import telecom_api_simulator
@@ -46,7 +47,7 @@ Your Core Responsibilities:
 # The docstrings from the telecom_api_simulator functions are automatically
 # used as descriptions for the tools.
 root_agent = LlmAgent(
-    name="TelecomEPPPlanAgent",
+    name="phone_plan_shopper_agent",
     description="An AI agent to help Neuravibe employees select discounted mobile plans.",
     instruction=AGENT_INSTRUCTION,
     tools=[
@@ -58,5 +59,4 @@ root_agent = LlmAgent(
     # This specifies the model to use. You might need to change this depending
     # on your environment and available models.
     model="gemini-2.5-flash",
-
 )

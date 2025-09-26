@@ -11,10 +11,7 @@
         "tags": ["phone plan", "mobile phone"]
     }
     ],
-    "provider": 
-    { 
-        "url": "https://phone-plan-shopper-agent-121968733869.us-central1.run.app/a2a/phoneplan_shopper" 
-    },
+    "url": "http://localhost:8001/a2a/phoneplan_shopper",
     "capabilities": {},
     "version": "1.0.0"
 }
