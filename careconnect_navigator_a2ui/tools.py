@@ -1,190 +1,184 @@
-import json
-import uuid
-import datetime
-import random
 from google.adk.tools.tool_context import ToolContext
-from typing import Optional, Dict, Any, List
+import logging
 
-def _generate_mock_data():
+# Set up logging to verify tool calls
+logging.basicConfig(level=logging.INFO)
+
+# ----------------------------------------------------------------------
+# Mock Database (Greater Atlanta Area)
+# ----------------------------------------------------------------------
+# Programmatic Data Generator to ensure 3 per specialty/zip coverage
+def _generate_providers():
     providers = []
-    availability = {}
-    zip_codes = ["60601", "60602", "60603"]
-    specialties = ["pediatrician", "family practice", "cardiologist", "dermatologist"]
+    specialties = ["Dermatology", "Primary Care", "Physical Therapy", "Cardiology", "Pediatrics", "Family Medicine", "Orthopedics", "Oncology", "Gynecology", "Obstetrics"]
+    zips = ["30303", "30301", "30305", "30022", "30062"]
     
-    first_names_f = ["Sarah", "Emily", "Jessica", "Ashley", "Amanda", "Elizabeth"]
-    first_names_m = ["Michael", "David", "Christopher", "Matthew", "Joshua", "James"]
-    last_names = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"]
-    
-    random.seed(42)  # Deterministic mock data
-    
-    provider_id_counter = 1
-    for zip_code in zip_codes:
+    # We generate 3 doctors per specialty per zip with distinct network profiles
+    for zip_code in zips:
         for specialty in specialties:
-            # 3 In-Network and 3 Out-of-Network docs per specialty per zip
-            for network_status in ["In-Network", "Out-of-Network"]:
-                for _ in range(3):
-                    gender = random.choice(["Female", "Male"])
-                    if gender == "Female":
-                        fname = random.choice(first_names_f)
-                    else:
-                        fname = random.choice(first_names_m)
-                    
-                    lname = random.choice(last_names)
-                    pid = f"prov_{provider_id_counter}"
-                    
-                    doc = {
-                        "provider_id": pid,
-                        "name": f"Dr. {fname} {lname}",
-                        "specialty": specialty.title(),
-                        "gender": gender,
-                        "network_status": network_status,
-                        "location": f"{random.randint(100, 999)} State St",
-                        "zip_code": zip_code
-                    }
-                    if network_status == "Out-of-Network":
-                        doc["warning"] = "This provider is Out-of-Network. Higher out-of-pocket costs will apply."
-                    
-                    providers.append(doc)
-                    availability[pid] = [f"{random.randint(8,11)}:00 AM", f"{random.randint(1,4)}:00 PM"]
-                    provider_id_counter += 1
-                
-    return providers, availability
+            base_id = f"{specialty.lower().replace(' ', '_')}_{zip_code}"
+            
+            # Provider 1: HMO + PPO (Dual Network)
+            providers.append({
+                "id": f"{base_id}_1",
+                "name": f"Dr. Alice {specialty} (Zip {zip_code})",
+                "specialty": specialty,
+                "zip": zip_code,
+                "networks": ["HMO", "PPO"]
+            })
+            
+            # Provider 2: PPO Only
+            providers.append({
+                "id": f"{base_id}_2",
+                "name": f"Dr. Bob {specialty} (Zip {zip_code})",
+                "specialty": specialty,
+                "zip": zip_code,
+                "networks": ["PPO"]
+            })
+            
+            # Provider 3: Out-of-Network Only
+            providers.append({
+                "id": f"{base_id}_3",
+                "name": f"Dr. Charles {specialty} (Zip {zip_code}) (Out-of-Network)",
+                "specialty": specialty,
+                "zip": zip_code,
+                "networks": ["OON"]
+            })
+    return providers
 
-MOCK_PROVIDERS, MOCK_AVAILABILITY = _generate_mock_data()
+MOCK_PROVIDERS = _generate_providers()
 
 
-def search_providers(specialty: str, location_zip: str, health_plan_id: str, tool_context: ToolContext, preferred_date: Optional[str] = None, preferred_time: Optional[str] = None) -> dict:
-    """Finds doctors based on specialty, location, and health plan, prioritizing In-Network.
-    
-    If preferred_date and/or preferred_time are provided, it filters the results to those matching doctors.
-    Returns network status (In-Network prioritizing, Out-of-Network as fallback).
-    Requires 'health_plan_id' gathered from the user.
+MOCK_AVAILABILITY = {
+    "derma_1": ["2025-10-24 09:00", "2025-10-24 10:00", "2025-10-24 14:00"],
+    "derma_2": ["2025-10-24 11:00", "2025-10-24 15:00"],
+    "derma_3": ["2025-10-24 13:00"],
+    "pcp_1": ["2025-10-24 08:00", "2025-10-24 09:00"],
+    "pt_1": ["2025-10-24 10:00", "2025-10-24 11:00"],
+}
+
+# ----------------------------------------------------------------------
+# Tools
+# ----------------------------------------------------------------------
+
+def search_providers(specialty: str, zip_code: str, plan_type: str, date_time: str = None) -> dict:
     """
-    if not health_plan_id:
-        return {"error": "Missing health_plan_id. Please ask the user to provide their plan details."}
-        
-    print(f"Searching for {specialty} near {location_zip} for plan {health_plan_id} (preferred date: {preferred_date}, preferred time: {preferred_time})")
+    Search for healthcare providers by specialty, zip code, and network status.
+    Optionally filters by availability if date_time is provided.
     
-    # Filter providers by specialty and zip code
-    matched_providers = [
-        p for p in MOCK_PROVIDERS 
-        if specialty.lower() in p["specialty"].lower() and p["zip_code"] == location_zip
-    ]
+    Args:
+        specialty: The specialty of the doctor (e.g., Dermatology, Primary Care).
+        zip_code: The 5-digit zip code area to search in (e.g., 30303, 30301).
+        plan_type: The user's insurance plan type (HMO or PPO).
+        date_time: Optional. The date/time to check availability (e.g., 2024-10-24, 2024-10-24 09:00).
     
-    # Optional time filtering
-    if preferred_time or preferred_date:
-        time_filtered_providers = []
-        
-        # Round the preferred_time to the nearest hour
-        rounded_time = preferred_time
-        if preferred_time:
-            try:
-                import re
-                m = re.search(r'(\d{1,2}):(\d{2})\s*(am|pm)?', preferred_time, re.IGNORECASE)
-                if m:
-                    hr = int(m.group(1))
-                    mn = int(m.group(2))
-                    ampm = m.group(3)
-                    
-                    if mn >= 30:
-                        hr += 1
-                        
-                    # basic 24 to 12 hour AM/PM converter
-                    if not ampm:
-                        if hr >= 24:
-                            hr = 0
-                            ampm = "AM"
-                        elif hr >= 12:
-                            ampm = "PM"
-                            if hr > 12: hr -= 12
-                        else:
-                            ampm = "AM"
-                            if hr == 0: hr = 12
-                    else:
-                        ampm = ampm.upper()
-                        if hr == 13:
-                            hr = 1
-                            
-                    rounded_time = f"{hr}:00 {ampm}"
-            except Exception:
-                pass
-                
-        # Format the exact requested slot for the UI
-        exact_slot = f"{preferred_date} " if preferred_date else ""
-        exact_slot += f"{rounded_time}" if rounded_time else ""
-        exact_slot = exact_slot.strip()
-        
-        # To ensure the demo works seamlessly, we will artificially make a random 
-        # subset of the matched providers available at the exactly requested time!
-        for p in matched_providers:
-            pid = p["provider_id"]
-            if random.random() > 0.4: # ~60% chance to be available
-                if pid not in MOCK_AVAILABILITY:
-                    MOCK_AVAILABILITY[pid] = []
-                
-                # Add the explicitly requested slot to this provider's mock availability map
-                if exact_slot and exact_slot not in MOCK_AVAILABILITY[pid]:
-                    MOCK_AVAILABILITY[pid].append(exact_slot)
-                    
-                time_filtered_providers.append(p)
-                
-        # Fallback: if random chance filtered everyone out, just take the first two!
-        if not time_filtered_providers and matched_providers:
-            for p in matched_providers[:2]:
-                pid = p["provider_id"]
-                if exact_slot and exact_slot not in MOCK_AVAILABILITY[pid]:
-                    MOCK_AVAILABILITY[pid].append(exact_slot)
-                time_filtered_providers.append(p)
-                
-        matched_providers = time_filtered_providers
-    
-    if not matched_providers:
-        return {"status": "success", "results": [], "network_status_found": "None"}
-        
-    network_status_found = "In-Network" if any(p["network_status"] == "In-Network" for p in matched_providers) else "Out-of-Network"
-    return {"status": "success", "results": matched_providers, "network_status_found": network_status_found}
-
-
-def get_availability(provider_ids: list[str], time_frame: str, tool_context: ToolContext) -> dict:
-    """Fetches real-time, open time slots for a list of provider IDs and a general timeframe (e.g., 'Friday', 'tomorrow morning').
-    
-    Returns a dictionary mapping provider IDs to a list of available time slots.
+    Returns:
+        A list of matching providers with their network status (In-Network or out-of-network).
     """
-    if not provider_ids:
-        return {"error": "No provider_ids provided."}
+    logging.info(f"[Tool] search_providers called with specialty={specialty}, zip={zip_code}, plan={plan_type}, date_time={date_time}")
+    
+    filtered_providers = []
+    
+    # Normalize inputs and handle common synonyms
+    norm_specialty = specialty.lower().strip()
+    
+    if norm_specialty in ["pediatrician", "paediatrician"]:
+        norm_specialty = "pediatrics"
+    elif norm_specialty in ["gynecologist", "gynaecologist"]:
+        norm_specialty = "gynecology"
+    elif norm_specialty in ["obstetrician", "child birth", "childbirth"]:
+        norm_specialty = "obstetrics"
+    elif norm_specialty in ["orthopedic", "bone doctor", "bone case", "bones"]:
+        norm_specialty = "orthopedics"
         
-    print(f"Fetching availability for {provider_ids} around {time_frame}")
-    
-    availability = {}
-    for pid in provider_ids:
-        if pid in MOCK_AVAILABILITY:
-            availability[pid] = MOCK_AVAILABILITY[pid]
-             
-    return {"status": "success", "availability": availability}
+    norm_zip = zip_code.strip()
+    norm_plan = plan_type.upper().strip()
 
 
-def book_appointment(provider_id: str, date_time: str, tool_context: ToolContext) -> dict:
-    """Secures a specific time slot for the user with a chosen provider.
-    
-    Requires 'user_id' in the session state. 
+    if norm_plan not in ["HMO", "PPO"]:
+        return {"status": "error", "message": "Invalid plan type. Must be HMO or PPO."}
+
+    for p in MOCK_PROVIDERS:
+        if p["specialty"].lower() == norm_specialty and p["zip"] == norm_zip:
+            # Determine network status
+            is_in_network = norm_plan in p["networks"]
+            network_label = "In-Network" if is_in_network else "Out-of-Network"
+            
+            # Simulate availability check if date_time provided
+            if date_time:
+                # Simple mock: skip if id ends with _3 (just to show tool filtering works)
+                if p["id"].endswith("_3"):
+                    continue
+            
+            filtered_providers.append({
+                "id": p["id"],
+                "name": p["name"],
+                "specialty": p["specialty"],
+                "zip": p["zip"],
+                "network_status": network_label
+            })
+
+    return {"status": "success", "results": filtered_providers}
+
+
+def check_availability(provider_id: str, date: str, tool_context: ToolContext) -> dict:
     """
-    # Assume user is already authenticated
-    user_id = "authenticated_user"
-        
-    confirmation_number = f"CONF-{uuid.uuid4().hex[:8].upper()}"
-    print(f"Booking {provider_id} at {date_time} for {user_id}. Confirmation: {confirmation_number}")
+    Retrieve available time slots for a specific provider on a given date.
     
-    tool_context.state["selected_provider_id"] = provider_id
-    tool_context.state["booked_appointment_details"] = {
+    Args:
+        provider_id: The unique ID of the provider.
+        date: The date to check availability for (YYYY-MM-DD).
+    
+    Returns:
+        A list of available time slots or an error if not found.
+    """
+    logging.info(f"[Tool] check_availability called for provider={provider_id} on date={date}")
+    
+    if provider_id not in MOCK_AVAILABILITY:
+        # If no explicit mock availability exists, generate some dummy slots
+        # Just to make the demo work for all providers
+        return {
+            "status": "success",
+            "provider_id": provider_id,
+            "date": date,
+            "slots": [f"{date} 09:00", f"{date} 10:00", f"{date} 14:00"]
+        }
+
+    slots = MOCK_AVAILABILITY.get(provider_id, [])
+    # Filter by date if slots contain date
+    filtered_slots = [s for s in slots if s.startswith(date)]
+
+    return {
+        "status": "success",
         "provider_id": provider_id,
-        "date_time": date_time,
-        "confirmation_number": confirmation_number
+        "date": date,
+        "slots": filtered_slots
     }
+
+
+def book_appointment(provider_id: str, slot: str, tool_context: ToolContext) -> dict:
+    """
+    Confirm booking an appointment for a provider at a specific time slot.
+    
+    Args:
+        provider_id: The unique ID of the provider.
+        slot: The specific date and time slot (YYYY-MM-DD HH:MM).
+    
+    Returns:
+        Confirmation details or error if slot is unavailable.
+    """
+    logging.info(f"[Tool] book_appointment called for provider={provider_id} at slot={slot}")
+    
+    # In a real system, we would check if the slot is still open in DB
+    # For mock, we just confirm it.
+    
+    import uuid
+    confirmation_id = str(uuid.uuid4())[:8]
     
     return {
-        "status": "success", 
-        "message": "Appointment booked successfully.",
-        "confirmation_number": confirmation_number,
+        "status": "success",
+        "message": f"Appointment successfully booked for provider {provider_id} at {slot}.",
+        "confirmation_id": confirmation_id,
         "provider_id": provider_id,
-        "date_time": date_time
+        "slot": slot
     }

@@ -1,3 +1,2 @@
-
-# Mandatory for Agent Engine
-google-cloud-aiplatform[agent_engines,adk]
+jsonschema
+a2ui-agent-sdk @ git+https://github.com/google/A2UI.git#subdirectory=agent_sdks/python
